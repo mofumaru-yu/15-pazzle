@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>template</title>
+    <script src="https://unpkg.com/vue@3.2.37/dist/vue.global.js"></script>
+    <style>
+        .piece-container {
+            width: 720px;
+            height: 720px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            background-color: rgb(224, 224, 224);
+        }
+
+        .piece {
+            width: 180px;
+            height: 180px;
+            background-image: url(./maru.jpg);
+            box-sizing: border-box;
+            border: 1px solid #aaa;
+        }
+        .piece00 { background-position: -1px -1px; }
+        .piece01 { background-position: -181px -1px; }
+        .piece02 { background-position: -361px -1px; }
+        .piece03 { background-position: -541px -1px; }
+        .piece04 { background-position: -1px -181px; }
+        .piece05 { background-position: -181px -181px; }
+        .piece06 { background-position: -361px -181px; }
+        .piece07 { background-position: -541px -181px; }
+        .piece08 { background-position: -1px -361px; }
+        .piece09 { background-position: -181px -361px; }
+        .piece10 { background-position: -361px -361px; }
+        .piece11 { background-position: -541px -361px; }
+        .piece12 { background-position: -1px -541px; }
+        .piece13 { background-position: -181px -541px; }
+        .piece14 { background-position: -361px -541px; }
+        .piece15 { background-position: -541px -541px; background: none; z-index: -1; }
+
+        .button {
+            width: 720px;
+            background-color:rgb(205, 233, 182);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .piece-group-move {
+            transition: transform 0.1s ease-in;
+        }
+
+        /* ↑ここにCSSを書く。 */
+    </style>
+</head>
+<body>
+    <div id="app">
+        <transition-group name="piece-group" tag="div" class="piece-container">
+            <div class="piece" v-for="(id, i) in arr" :key="id" :class="[generateClassname(id)]" @click="slide(i)"></div>
+        </transition-group>
+        <p @click="shuffle" class="button">シャッフル</p>
+        <!-- ↑ここに表示するものを書く。 -->
+    </div>
+    
+    <script>
+        const App = {
+            setup() {
+                const arr= Vue.ref([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
+                const generateClassname = (id) => 'piece' + String(id).padStart(2, '0')
+
+                const shuffle = () => {
+                    const tmp = [...arr.value]
+                    for (let i = tmp.length - 1; i > 0; i--) {
+                        const r = Math.floor(Math.random() * (i + 1))
+                        const t = tmp[i]
+                        tmp[i] = tmp[r]
+                        tmp[r] = t
+                    }
+                    arr.value = tmp
+                }
+
+                const slideX = (from, to) => {
+                    const tmp = [...arr.value]
+                    const [t] = tmp.splice(to, 1)
+                    tmp.splice(from, 0, t)
+                    arr.value = tmp
+                }
+
+                const slideD = (from, to) => {
+                    const tmp = [...arr.value]
+                    let [t] = tmp.splice(to, 1)
+                    for (let i = from; i < to; i += 4) {
+                        [t] = tmp.splice(i, 1, t)
+                    }
+                    tmp.splice(to, 0, t)
+                    arr.value = tmp
+                }
+
+                const slideU = (from, to) => {
+                    const tmp = [...arr.value]
+                    let [t] = tmp.splice(to, 1)
+                    for (let i = from; i > to; i -= 4) {
+                        [t] = tmp.splice(i - 1, 1, t)
+                    }
+                    tmp.splice(to, 0, t)
+                    arr.value = tmp
+                }
+
+                const slide = (from) => {
+                    const bIndex = arr.value.indexOf(15)
+                    if (Math.floor(bIndex / 4) === Math.floor(from / 4)) {
+                        slideX(from, bIndex)
+                    }
+                    if ((bIndex % 4) === (from % 4)) {
+                        if (bIndex > from) {
+                            slideD(from, bIndex)
+                        } else {
+                            slideU(from, bIndex)
+                        }
+                     }
+                }
+
+                return{
+                    arr,
+                    generateClassname,
+                    shuffle,
+                    slide,
+                }
+                // ↑ここにJavaScriptを書く。
+            },
+        } 
+
+        Vue.createApp(App).mount('#app')
+    </script>
+</body>
+</html>
